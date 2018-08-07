@@ -5,6 +5,8 @@ import commands
 import re
 import sys
 
+PAD_CONFIG_DIRNAME = "pad_config"
+
 # params: 
 # 1) NAME
 # 2) WIDTH=$2
@@ -105,7 +107,7 @@ if __name__ == "__main__":
         exit(-1)
 
     sys.dont_write_bytecode = True # avoid .pyc from the modules
-    sys.path.append("/home/helen/kernel-scripts/pad_config/")
+    sys.path.append(os.path.join(os.path.curdir, PAD_CONFIG_DIRNAME))
 
     exec('import %s' % sys.argv[1])
     mod = sys.modules[sys.argv[1]]

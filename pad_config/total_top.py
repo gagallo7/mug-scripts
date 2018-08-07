@@ -63,7 +63,7 @@ pads= [ \
         },
         {
             'name':     'Raw Capture 0',
-            'dev':      '/dev/video0',
+            'dev':      '/dev/video2',
             'width':    WIDTH,
             'height':   HEIGHT,
             'field':    'none',
@@ -71,7 +71,7 @@ pads= [ \
         },
         {
             'name':     'Raw Capture 1',
-            'dev':      '/dev/video1',
+            'dev':      '/dev/video3',
             'width':    WIDTH,
             'height':   HEIGHT,
             'field':    'none',
@@ -97,7 +97,7 @@ pads= [ \
         },
         {
             'name':     'RGB/YUV Capture',
-            'dev':      '/dev/video2',
+            'dev':      '/dev/video4',
             'width':    WIDTH*SCALER_MULT,
             'height':   HEIGHT*SCALER_MULT,
             'field':    'none',

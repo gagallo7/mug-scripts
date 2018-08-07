@@ -2,7 +2,7 @@
 
 set -eux
 
-if [[ ${PWD##*/} != "linux" ]]; then
+if [[ ! -d arch ]]; then
 	echo "ERROR: This script should be executed in a linux directory"
 	exit 1
 fi
@@ -41,7 +41,7 @@ function create_img {
 		exit 1
 	fi
 
-	sudo vmdebootstrap --verbose --image=${IMG} --size=5g --distribution=${DIST} --grub --enable-dhcp --package=${PKGS} --owner=$USER
+	sudo vmdebootstrap --verbose --image=${IMG} --size=10g --distribution=${DIST} --grub --enable-dhcp --package=${PKGS} --owner=$USER
 }
 
 function config_img {
@@ -53,7 +53,7 @@ function config_img {
 		mkdir ${SHARE}
 		echo "This is a shared folder between the host and guest" > ${SHARE}/README
 	fi
-	echo "host-code /root/host 9p trans=virtio 0 0" >> ${MNT}/etc/fstab
+	echo "host-code /root/host 9p rw,sync,dirsync,relatime,access=client,trans=virtio 0 0" >> ${MNT}/etc/fstab
 
 	# Add ssh key
 	if [[ ! -f ~/.ssh/kern-vm-key ]]; then
@@ -74,21 +74,32 @@ function vm_launch_native {
 		-fsdev local,id=fs1,path=${SHARE},security_model=none \
 		-device virtio-9p-pci,fsdev=fs1,mount_tag=host-code \
 		-net nic -net user,hostfwd=tcp::5555-:22 \
-		-m 2g
+		-m size=4G
 }
 
 function vm_launch {
 	# Launch VM with custom kernel
-	kvm -hda $IMG \
-		-fsdev local,id=fs1,path=${SHARE},security_model=none \
-		-device virtio-9p-pci,fsdev=fs1,mount_tag=host-code \
-		-s \
-		-smp 1 \
-		-nographic \
-		-kernel ${KERNEL} \
-		-append "root=/dev/sda1 console=ttyS0" \
-		-net nic -net user,hostfwd=tcp::5555-:22 \
-		-m 2g
+	kvm -drive format=raw,file=$IMG,if=virtio \
+	  	-fsdev local,id=fs1,path=${SHARE},security_model=none \
+	  	-device virtio-9p-pci,fsdev=fs1,mount_tag=host-code \
+	  	-s \
+	  	-smp 1 \
+	  	-nographic \
+	  	-kernel ${KERNEL} \
+	  	-append "root=/dev/vda1 console=ttyS0" \
+	  	-net nic -net user,hostfwd=tcp::5555-:22 \
+	  	-m size=4G
+}
+
+function vm_launch_graphical {
+	# Launch VM with custom kernel
+  kvm -drive format=raw,file=../deb-sid-vm.img,if=virtio \
+      -fsdev local,id=fs1,path=${SHARE},security_model=none \
+      -device virtio-9p-pci,fsdev=fs1,mount_tag=host-code \
+      -kernel arch/x86_64/boot/bzImage \
+      -append "root=/dev/vda1" \
+      -net nic -net user,hostfwd=tcp::5555-:22 \
+      -m size=4G
 }
 
 case "${1-}" in
@@ -106,6 +117,9 @@ case "${1-}" in
 	launch)
 		vm_launch
 		;;
+  run)
+    vm_launch_graphical
+    ;;
 	launch-native)
 		vm_launch_native
 		;;
@@ -114,7 +128,7 @@ case "${1-}" in
 		config_img
 		;;
 	*)
-		echo "Usage: $0 {mount|umount|install|launch|launch-native|create-img}"
+		echo "Usage: $0 {mount|umount|install|launch|launch-native|run|create-img}"
 		echo "Requirements: libguestfs-tools kvm vmdebootstrap"
 		exit 1
 esac
