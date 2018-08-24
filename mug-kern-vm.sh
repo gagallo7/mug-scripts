@@ -19,7 +19,7 @@ PKGS=openssh-server,xauth,xwayland
 # Dev tools
 PKGS=${PKGS},git,vim
 # v4l-utils build dependencies
-PKGS=${PKGS},dh-autoreconf,autotools-dev,doxygen,gettext,graphviz,libasound2-dev,libtool,libjpeg-dev,qtbase5-dev,libudev-dev,libx11-dev,pkg-config,udev,qt5-default
+PKGS=${PKGS},dh-autoreconf,autotools-dev,gettext,graphviz,libasound2-dev,libtool,libjpeg-dev,qtbase5-dev,libudev-dev,libx11-dev,pkg-config,udev,qt5-default
 
 function vm_mount {
 	if [[ ! -d ${MNT} ]]; then
