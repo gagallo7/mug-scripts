@@ -148,6 +148,11 @@ case "${1-}" in
     make modules_install install INSTALL_MOD_PATH=$MNT INSTALL_PATH=$MNT
     vm_umount
     ;;
+  modinstall)
+    vm_mount
+    make modules_install INSTALL_MOD_PATH=$MNT
+    vm_umount
+    ;;
   launch)
     vm_launch
     ;;
@@ -157,15 +162,15 @@ case "${1-}" in
   launch-native)
     vm_launch_native
     ;;
-  create-img)
+  create-raw)
     create_img
     config_img
     ;;
-  config-img)
+  config-raw)
     config_img
     ;;
   *)
-    echo "Usage: $0 {mount|umount|install|launch|launch-native|run|create-img|config_img}"
+    echo "Usage: $0 {mount|umount|install|modinstall|launch|launch-native|run|create-raw|config_img}"
     echo "Requirements: libguestfs-tools ${KVM} vmdebootstrap"
     exit 1
 esac
