@@ -8,8 +8,8 @@ if [[ ! -d arch ]]; then
 fi
 
 DIST=sid
-IMG=../deb-${DIST}-vm.img
-MNT=../deb-${DIST}-vm-mount.dir
+IMG=~/vm/vm_fast/debian-vm.img
+MNT=~/vm/vm_fast/vm_mount
 LOCK_FILE=../mount.lock
 SHARE=../vm-share.dir
 KERNEL=arch/x86_64/boot/bzImage
@@ -120,7 +120,24 @@ function vm_launch {
     -kernel ${KERNEL} \
     -append "root=/dev/vda1 console=ttyS0" \
     -net nic -net user,hostfwd=tcp::5555-:22 \
-    -m size=4G
+    -m size=4G \
+    -vnc :0
+}
+
+function vm_launch_debug {
+  check_lock
+  # Launch VM with custom kernel
+  ${KVM} -drive format=raw,file=$IMG,if=virtio \
+    -fsdev local,id=fs1,path=${SHARE},security_model=none \
+    -device virtio-9p-pci,fsdev=fs1,mount_tag=host-code \
+    -s -S \
+    -smp 1 \
+    -nographic \
+    -kernel ${KERNEL} \
+    -append "root=/dev/vda1 console=ttyS0" \
+    -net nic -net user,hostfwd=tcp::5555-:22 \
+    -m size=4G \
+    -vnc :0
 }
 
 function vm_launch_graphical {
@@ -156,6 +173,9 @@ case "${1-}" in
   launch)
     vm_launch
     ;;
+  debug)
+    vm_launch_debug
+    ;;
   run)
     vm_launch_graphical
     ;;
@@ -170,7 +190,7 @@ case "${1-}" in
     config_img
     ;;
   *)
-    echo "Usage: $0 {mount|umount|install|modinstall|launch|launch-native|run|create-raw|config_img}"
+    echo "Usage: $0 {mount|umount|install|modinstall|launch|debug|launch-native|run|create-raw|config_img}"
     echo "Requirements: libguestfs-tools ${KVM} vmdebootstrap"
     exit 1
 esac

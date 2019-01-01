@@ -7,7 +7,7 @@ import sys
 
 PAD_CONFIG_DIRNAME = "pad_config"
 
-# params: 
+# params:
 # 1) NAME
 # 2) WIDTH=$2
 # 3) HEIGHT=$3
@@ -27,18 +27,18 @@ def change_sd_fmt(params, mdev):
     name = "\'" + params['name'] + "\'"
 
     # Print the old format
-    cmd = "sudo media-ctl %s -d %s --get-v4l2 \"%s:%d\"" % (params['verbose'], mdev, name, params['pad'])
+    cmd = "%s media-ctl %s -d %s --get-v4l2 \"%s:%d\"" % (sudo, params['verbose'], mdev, name, params['pad'])
     print '>' + cmd
     os.system(cmd)
 
     # Set the new format
-    cmd = "sudo media-ctl %s -d %s -V \"%s:%s [fmt:%s/%dx%d field:%s]\"" % \
-            (params['verbose'], mdev, name, params['pad'], params['code'], params['width'], params['height'], field)
+    cmd = "%s media-ctl %s -d %s -V \"%s:%s [fmt:%s/%dx%d field:%s]\"" % \
+            (sudo, params['verbose'], mdev, name, params['pad'], params['code'], params['width'], params['height'], field)
     print '>' + cmd
     os.system(cmd)
 
     # Print the new format
-    cmd = "sudo media-ctl %s -d %s --get-v4l2 \"%s:%d\"" % (params['verbose'], mdev, name, params['pad'])
+    cmd = "%s media-ctl %s -d %s --get-v4l2 \"%s:%d\"" % (sudo, params['verbose'], mdev, name, params['pad'])
     print '>' + cmd
     output = commands.getstatusoutput(cmd)
     print output[1]
@@ -48,10 +48,13 @@ def change_sd_fmt(params, mdev):
         exit(-1)
 
     # Check if we could apply the format
-    new_fmt = re.search(':(.*)/(.*)]', output[1])
+    new_fmt = re.search(':(.*)/(.*) colorspace.*]', output[1])
     if not new_fmt or \
         new_fmt.group(1) != params['code'] or \
         new_fmt.group(2) != "%dx%d field:%s" % (params['width'], params['height'], field):
+
+        print new_fmt.group(2)
+        print params
 
         print ""
         print "ERR: Could not apply format"
@@ -101,6 +104,8 @@ def change_vid_fmt(params):
 if __name__ == "__main__":
     MDEV='/dev/media0'
 
+    sudo = "sudo" if os.geteuid() != 0 else ""
+
     if len(sys.argv) != 2:
         print "Usage %s <pad_config>" % sys.argv[0]
         print "Where <pad_config> is in pad_config/<pad_config>.py"
@@ -126,6 +131,6 @@ if __name__ == "__main__":
     print "==========================================="
     print "SUMMARY"
     print "==========================================="
-    cmd = 'sudo media-ctl -p -d ' + MDEV
+    cmd = '{} media-ctl -p -d '.format(sudo) + MDEV
     print '>' + cmd
     os.system(cmd)

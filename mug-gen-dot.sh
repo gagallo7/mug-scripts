@@ -16,12 +16,15 @@ function findDot()
 
 function main()
 {
+  set -x
   DEV=/dev/media0
+  [ "$(whoami)" == "root" ] || SUDO='sudo env "PATH=$PATH"'
   rm /tmp/uvc.dot
   rm /tmp/uvc.ps
-  sudo env "PATH=$PATH" media-ctl -d $DEV --print-dot > /tmp/uvc.dot
+  ${SUDO} media-ctl -d $DEV --print-dot > /tmp/uvc.dot
   dot -Tps -o /tmp/uvc.ps /tmp/uvc.dot
   evince /tmp/uvc.ps &
+  set -x
 }
 
 findDot
