@@ -1,9 +1,8 @@
 echo "
 
+chsh -l /bin/bash
 xinit
 
 " >> ~/.profile
 
 source ~/.profile
-
-i3-sensible-terminal

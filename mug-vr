@@ -1,6 +1,8 @@
 #!/bin/bash
 
 trap SIGHUP finish
+trap SIGINT finish
+trap SIGKILL finish
 
 MUG_VR_DIR="$(dirname "$(readlink -f "$0")")"
 SCRIPTS_DIR="$MUG_VR_DIR"/bootstrap_scripts
@@ -29,8 +31,10 @@ configure_scripts()
 
 set -x
 
-configure_scripts "${DEFAULT_FOLDERS}:$@"
+configure_scripts "${DEFAULT_FOLDERS}:$*"
 
 VIRTME_ARGS="--kdir=$KERNEL_DIR --cwd=. --graphics --script-dir $TEMP"
 QEMU_ARGS="-vga virtio -smp 2 -m 2G"
-virtme-run $VIRTME_ARGS --qemu-opts $QEMU_ARGS
+eval "virtme-run $VIRTME_ARGS --qemu-opts $QEMU_ARGS"
+
+rm -Rf "$TEMP"

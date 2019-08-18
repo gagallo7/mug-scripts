@@ -2,6 +2,8 @@ echo "
 xrdb -load /etc/X11/Xresources
 xsetroot -solid darkgreen &
 
+chsh -s /bin/bash
+
 i3
 " > ~/.xinitrc
 #xclock -g 50x50-0+0 -bw 0 &
