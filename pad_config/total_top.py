@@ -97,7 +97,7 @@ pads= [ \
         },
         {
             'name':     'RGB/YUV Capture',
-            'dev':      '/dev/video3',
+            'dev':      '/dev/video2',
             'width':    WIDTH*SCALER_MULT,
             'height':   HEIGHT*SCALER_MULT,
             'field':    'none',

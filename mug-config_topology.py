@@ -48,12 +48,22 @@ def change_sd_fmt(params, mdev):
         exit(-1)
 
     # Check if we could apply the format
-    new_fmt = re.search(':(.*)/(.*) colorspace.*]', output[1])
-    if not new_fmt or \
-        new_fmt.group(1) != params['code'] or \
-        new_fmt.group(2) != "%dx%d field:%s" % (params['width'], params['height'], field):
+    new_fmt = re.search(':(.*)/(.* field.*)]', output[1])
+    print(new_fmt)
+    cond1 = False
+    cond2 = False
+    if new_fmt:
+        cond1 = new_fmt.group(1).strip() != str(params['code']).strip()
+        cond2 = new_fmt.group(2).strip() != "%dx%d field:%s" % \
+                (params['width'], params['height'], field)
+    if not new_fmt or cond1 or cond2:
 
-        print new_fmt.group(2)
+        print("condition 1 == {} -- condition 2 == {}".format(cond1, cond2))
+
+        if new_fmt:
+            print "{}>> !=\n{}<<".format(new_fmt.group(2), "%dx%d field:%s" % \
+                                (params['width'], params['height'], field))
+            print new_fmt.group(2)
         print params
 
         print ""
@@ -91,6 +101,7 @@ def change_vid_fmt(params):
 
     # Check if we could apply the format
     new_fmt = re.search('Video format: (.*?) .*? (.*?) ', output[1])
+    print(new_fmt)
     if not new_fmt or \
         new_fmt.group(1) != params['fmt'] or \
         new_fmt.group(2) != "%dx%d" % (params['width'], params['height']):
@@ -120,7 +131,7 @@ if __name__ == "__main__":
         print "File %s doesn't define pads variable" % sys.argv[1]
         exit(-1)
 
-    #print pads
+    print mod.pads
 
     for pad in mod.pads:
         if 'code' in pad:

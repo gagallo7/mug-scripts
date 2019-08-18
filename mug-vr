@@ -1,0 +1,36 @@
+#!/bin/bash
+
+trap SIGHUP finish
+
+MUG_VR_DIR="$(dirname "$(readlink -f "$0")")"
+SCRIPTS_DIR="$MUG_VR_DIR"/bootstrap_scripts
+TEMP="$SCRIPTS_DIR"/tmp
+DEFAULT_FOLDERS="x11"
+
+finish()
+{
+    set +x
+    rm -Rf "$TEMP"
+}
+
+# $*: list of colon-separated folders with scripts to be merged to run in
+#     the virtualized system bootstrap
+configure_scripts()
+{
+    rm -Rf "$TEMP"
+    mkdir "$TEMP"
+    local IFS=':'
+    read -ra F <<< "$@"
+    for i in "${F[@]}"
+    do
+        cp "$SCRIPTS_DIR/$i"/* "$TEMP"
+    done
+}
+
+set -x
+
+configure_scripts "${DEFAULT_FOLDERS}:$@"
+
+VIRTME_ARGS="--kdir=$KERNEL_DIR --cwd=. --graphics --script-dir $TEMP"
+QEMU_ARGS="-vga virtio -smp 2 -m 2G"
+virtme-run $VIRTME_ARGS --qemu-opts $QEMU_ARGS
