@@ -5,7 +5,7 @@ xsetroot -solid darkgreen &
 chsh -s /bin/bash
 
 i3
-" > ~/.xinitrc
+" > ~/.xinitrc.bak
 #xclock -g 50x50-0+0 -bw 0 &
 #xload -g 50x50-50+0 -bw 0 &
 #xterm -g 80x24+0+0 &

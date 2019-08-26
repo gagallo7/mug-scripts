@@ -3,6 +3,6 @@ echo "
 chsh -l /bin/bash
 xinit
 
-" >> ~/.profile
+" >> ~/.profile.bak
 
 source ~/.profile
