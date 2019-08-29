@@ -1,9 +1,8 @@
 #!/bin/bash
 
 echo "
-insmod hello-1.ko
+modprobe vimc
+su - kvm_user
+" >> ~/.profile
 
-dmesg -w -H
-" >> ~/.bashrc
-
-urxvt
+. ~/.profile

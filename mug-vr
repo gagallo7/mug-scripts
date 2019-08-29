@@ -5,7 +5,7 @@ trap finish EXIT
 MUG_VR_DIR="$(dirname "$(readlink -f "$0")")"
 SCRIPTS_DIR="$MUG_VR_DIR"/bootstrap_scripts
 TEMP="$SCRIPTS_DIR"/tmp
-DEFAULT_FOLDERS="x11"
+DEFAULT_FOLDERS=""
 KVM_USER_HOME=/home/kvm_user
 
 finish()
@@ -19,7 +19,7 @@ usage()
 {
     cat << EOF
 Usage:
-    $0 -c <configure script dir>+ -m <module install dir>
+    $0 -c <configure script dir> -m <module install dir>
 EOF
 
     exit "$1"
@@ -31,24 +31,33 @@ configure_scripts()
 {
     rm -Rf "$TEMP"
     mkdir "$TEMP"
+
+    if (( "${#F[@]}" < 1 ))
+    then
+        return 1
+    fi
+
     local IFS=':'
     read -ra F <<< "$@"
     for i in "${F[@]}"
     do
         cp "$SCRIPTS_DIR/$i"/* "$TEMP"
     done
+
+    SCRIPT="--script-dir $TEMP"
 }
 
 set -x
 
 parse_arguments()
 {
-    while getopts ":c:m:" opt
+    while getopts ":c:m:h" opt
     do
         case $opt in
             c ) CONFIG_DIR=$OPTARG;;
             m ) MDIR=$OPTARG;;
-            * ) usage 1
+            h ) usage 0;;
+            * ) usage 1;;
         esac
     done
 
@@ -62,8 +71,9 @@ main()
 {
     configure_scripts "${DEFAULT_FOLDERS}:${CONFIG_DIR}"
 
-    VIRTME_ARGS="--kdir=$KERNEL_DIR --cwd=. --rwdir=${KVM_USER_HOME} --graphics --script-dir $TEMP $MDIR"
-    QEMU_ARGS="-vga virtio -smp 2 -m 2G"
+    VIRTME_ARGS="--kdir=$KERNEL_DIR --cwd=. --home=${KVM_USER_HOME} --graphics $SCRIPT $MDIR"
+    QEMU_ARGS="-vga virtio -smp 2 -m 2G -show-cursor"
+    export SDL_VIDEO_X11_DGAMOUSE=0
     eval "virtme-run $VIRTME_ARGS --qemu-opts $QEMU_ARGS"
 
     rm -Rf "$TEMP"
